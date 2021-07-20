@@ -8,7 +8,8 @@ import logging
 db_connection_count = 0
 
 def log(message, *args):
-    app.logger.info(f'%s, {message}', datetime.now().strftime("%d/%m/%Y, %H:%M:%S"), *args)
+    log_message = '{date}, {message}'.format(date=datetime.now().strftime("%d/%m/%Y, %H:%M:%S"), message=message)
+    app.logger.info(log_message, *args)
 #01/08/2021, 22:40:10
 
 # Function to get a database connection.
