@@ -29,6 +29,12 @@ def get_post(post_id):
     connection.close()
     return post
 
+def get_posts_count():
+    connection = get_db_connection()
+    posts_count = connection.execute('SELECT COUNT(*) FROM posts').fetchone()[0]
+    connection.close()
+    return posts_count
+
 # Define the Flask application
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your secret key'
@@ -82,25 +88,28 @@ def create():
 
 @app.route("/healthz")
 def healthz():
-    response = app.response_class(
+    try:
+        get_posts_count()
+        return app.response_class(
             response=json.dumps({"result":"OK - healthy"}),
             status=200,
             mimetype='application/json'
-    )
-
-    return response
-
+        )
+    except:
+        return app.response_class(
+            response=json.dumps({"result":"ERROR - unhealthy"}),
+            status=500,
+            mimetype='application/json'
+        )
 @app.route("/metrics")
 def metrics():
     global db_connection_count
-    connection = get_db_connection()
-    post_count = connection.execute('SELECT COUNT(*) FROM posts').fetchone()[0]
-    connection.close()
+    posts_count = get_posts_count()
 
     response = app.response_class(
             response=json.dumps({
                 "db_connection_count": db_connection_count,
-                "post_count": post_count
+                "post_count": posts_count
             }),
             status=200,
             mimetype='application/json'
